@@ -1,0 +1,58 @@
+
+name: Build Pakistan Live Scanner APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip \
+            python3-pip \
+            python3-venv \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo5 \
+            cmake \
+            libffi-dev \
+            libssl-dev
+
+      - name: Install Buildozer
+        run: |
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user buildozer cython==0.29.36
+
+      - name: Build Android APK
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          yes | buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pakistan-Live-Scanner-APK
+          path: bin/*.apk
+          if-no-files-found: error
+          
